@@ -1,0 +1,19 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Open Sans
+
+skinparam sequence {
+	ArrowColor #0066a1
+	ActorBorderColor #0066a1
+	LifeLineBorderColor #0066a1
+	LifeLineBackgroundColor #0066a1
+
+	ParticipantBorderColor #0066a1
+	ParticipantBackgroundColor #0066a1
+	ParticipantFontColor #eff9ff
+	ParticipantPadding 10
+	BoxBorderColor #0d0d0d
+	BoxBackgroundColor #efefef
+}
+
+@enduml

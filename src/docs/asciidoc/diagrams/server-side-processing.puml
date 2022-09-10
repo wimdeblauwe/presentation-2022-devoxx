@@ -1,0 +1,21 @@
+@startuml
+
+!include plantuml-style.iuml
+
+box "Client"
+participant "Browser" as B
+end box
+box "Server"
+participant "Application" as A
+participant "Thymeleaf Engine" as T
+end box
+
+B -> A: GET /
+A -> A: Find Controller that matches\nwith /
+A -> A: Call Controller method to build the Model
+A -> A: Find the Thymeleaf template\nthat matches
+A -> T: Generate HTML using the template\nand the Model
+T --> A: return HTML page
+A --> B: return HTML page
+
+@enduml

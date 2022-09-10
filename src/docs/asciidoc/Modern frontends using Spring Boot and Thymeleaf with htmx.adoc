@@ -1,0 +1,735 @@
+= Modern frontends using Spring Boot and Thymeleaf with htmx
+Wim Deblauwe <wim.deblauwe@widit.be>
+ifndef::imagesdir[:imagesdir: images]
+ifndef::diagramsdir[:diagramsdir: diagrams]
+:title-slide-background-image: background.jpeg
+:docinfo: shared
+:revealjs_center: false
+
+== Wim Deblauwe
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[.sweetie]
+image::sweetie-happy.png[]
+
+* Freelance Java developer at Sweet Mustard
+* Author of 'Taming Thymeleaf'
+* ❤️ Java, Spring, Thymeleaf & Asciidoctor
+
+[.notes]
+--
+Hello and welcome to my presentation on 'Modern frontends using Spring Boot and Thymeleaf with htmx'.
+My name is Wim Deblauwe.
+I am a freelance Java developer, currently working at Sweet Mustard in Belgium.
+I am the author of the book 'Taming Thymeleaf', an in-depth guide to building a full web application using Spring Boot and Thymeleaf.
+I love working with Java, Spring, Thymeleaf and Asciidoctor as they are amazing tools that give a lot of productivity and joy when I work with them.
+I will give a very brief introduction to what thymeleaf is and will show how htmx enhances this with code samples and lots of demo's.
+--
+
+== What is Thymeleaf?
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[%step]
+[quote]
+Thymeleaf is a server-side Java template engine that uses natural templates to generate HTML pages.
+
+[.notes]
+--
+First off, what is Thymeleaf?
+To quote the website, "Thymeleaf is a server-side Java template engine that uses natural templates to generate HTML pages."
+This definition contains a lot, so let's unpack this into 3 main components:
+1) It is a 'server-side Java template engine'.
+So it is a template engine to be used on the server-side of a client/server architecture for Java projects.
+2) It uses natural templates.
+This means a template page or part of it, can perfectly be displayed by a browser as a prototype, without being executed by the template engine.
+3) It generates HTML pages. This is in fact the main goal of Thymeleaf, to generate HTML pages to be sent to the client or browser.
+--
+
+[%notitle]
+== Server-side rendering
+
+[.stretch.white.background]
+plantuml::{diagramsdir}/server-side-processing.puml[format=svg]
+
+[.notes]
+--
+Let's take a closer look on how this works.
+Starting at the top left, we have a browser doing a GET request to the application.
+The application will call into the controller that matches with the given URL.
+The controller method will build up the model. That model will contain all variables for the template.
+The controller will indicate the template that should be used.
+The application will locate the template that matches and give both the model and the template to the Thymeleaf engine.
+The engine generates the HTML page and returns it to the application.
+The application in turn sends this back to the browser.
+--
+
+== SPA vs MPA
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+* SPA: Single Page Application
+* MPA: Multi Page Application aka "classic" server-side rendering
+
+[.notes]
+--
+Before we continue, a bit of terminology: SPA vs MPA
+SPA is the abbreviation of Single Page Application.
+This is a web application where the complete application lives in the browser and all changes are done using JavaScript executing in the browser.
+Such an application will typically send JSON back and forth to get information from the server.
+MPA means Multi Page Application, or "classic" server-side rendering.
+So every page is rendered at the server and shown in the browser and each interaction typically needs a full page reload.
+I've put the classic in there because SSR is also sometimes used now for SPA's as well.
+Examples of technology stacks that create MPA applications are Django/Python, Laravel/PHP, Spring Boot&Thymeleaf/Java
+
+* SPA: is the typical Angular, React, Svelte, Vue application
+* MPA: Django/Python, Laravel/PHP, Java/Spring Boot/Thymeleaf
+--
+
+== Consequences of using SSR
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[%step]
+* No JavaScript is needed to display the page
+* No dependency on the client's capabilities for the render speed
+* No JavaScript is needed to develop the page
+* SEO
+* Page changes need a roundtrip to the server
+
+[.notes]
+--
+What are some of the consequences of using SSR?
+I intentionally put 'consequences' and not advantages or disadvantages in there as each project is different and many choices are always trade-offs.
+
+With SSR, you don't need JavaScript enabled to display the page. This means that pages can be extremely light-weight using only HTML and CSS.
+There is no dependency on the client's capabilities for the render speed. Most devices are low-to-average powered devices. With an SPA, the user experience depends much more significantly on the power of the client device compared to an MPA.
+When developing an SPA, you will typically use JavaScript or TypeScript to create such an application.
+With an MPA, there is no such restriction. You can use any programming language that can generate HTML.
+Search Engine Optimization is important to be found by Google or other search engines and be ranked high. With an SPA, this is hard as the indexing robot will typically not execute the JavaScript of your application. With an MPA, the HTML is readily available to be indexed.
+Another consequence of using SSR, is that each page needs a roundtrip to the server. This is usually seen as a drawback of MPA's. Note however, that opening your SPA in a 2nd tab also requires a roundtrip to the server plus the full build-up of the application in JavaScript at the client side.
+--
+
+== Consequences of using SSR (2)
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[%step]
+* Caching
+* Deep linkable by default
+* Smaller page size
+* Easier to have coherent team/Harder to split the team
+
+[.notes]
+--
+Caching is handled automatically by the browser when using an MPA. With an SPA, sometimes, you will need to mimick caching behaviour that you otherwise get of the box.
+SSR applications are deep linkable by default. Each page in an MPA has an associated URL. With an SPA, the URL might never update if the developers don't take care of this, making linking to a particular part or state of the application impossible.
+Since less or no JavaScript needs to be loaded, MPA applications tend to have a smaller page size. SPA's are bigger initially, but are able to communicate more efficiently afterwards using JSON payloads.
+This last point can really be looked at from 2 angles. With an MPA, it is easier to have a coherent team. At the same time, it is harder to split the team on technology boundaries. But it is a good idea to split on those technological boundaries?
+--
+
+== Controller
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[.stretch]
+[source,java,linenums]
+.RootController.java
+----
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.List;
+
+@Controller
+@RequestMapping("/")
+public class RootController {
+
+    @GetMapping
+    public String index(Model model) {
+        var list = List.of("Albert Einstein",
+                           "Niels Bohr",
+                           "James Clerk Maxwell");
+        model.addAttribute("scientists", list);
+        return "index";
+    }
+}
+----
+
+[%auto-animate]
+== Example template
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,html,linenums,data-id=exampletemplate]
+.src/main/resources/templates/index.html
+----
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Taming Thymeleaf</title>
+</head>
+<body>
+</body>
+</html>
+----
+
+[%auto-animate]
+== Example template
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,html,linenums,data-id=exampletemplate]
+.src/main/resources/templates/index.html
+----
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Taming Thymeleaf</title>
+</head>
+<body>
+</body>
+</html>
+----
+
+[%auto-animate]
+== Example template
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,html,linenums,data-id=exampletemplate]
+.src/main/resources/templates/index.html
+----
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Taming Thymeleaf</title>
+</head>
+<body>
+<h1 th:text="#{scientists.title}">Scientists</h1>
+</body>
+</html>
+----
+
+[%auto-animate]
+== Example template
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,html,linenums,data-id=exampletemplate]
+.src/main/resources/templates/index.html
+----
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="en">
+<head>...</head>
+<body>
+<h1 th:text="#{scientists.title}">Scientists</h1>
+<div>
+    <ul>
+        <li th:each="scientist : ${scientists}">
+            <span th:text="${scientist}"></span>
+        </li>
+    </ul>
+</div>
+</body>
+</html>
+----
+
+[transition=slide-in,fade-out]
+== Result
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[.stretch]
+image::first-controller.png[]
+
+== Page reloads
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[.center]
++++
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Is the biggest SPA lie ever told that page reloads = bad UX?</p>&mdash; David Whitney - Spooky not just for October 🖤 (@david_whitney) <a href="https://twitter.com/david_whitney/status/1454100185366376459?ref_src=twsrc%5Etfw">October 29, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
++++
+
+== Page reloads
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[.center]
++++
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Page reloads are great UX if they complete within one second. Bookmarkable, browser back button works as expected, easy to open in multiple tabs, and helpful for troubleshooting. <a href="https://t.co/AiP5MDwEFH">https://t.co/AiP5MDwEFH</a></p>&mdash; Paul Bort (@catzoup) <a href="https://twitter.com/catzoup/status/1454311949928370179?ref_src=twsrc%5Etfw">October 30, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
++++
+
+== Dynamic behaviour?
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+Do I need to develop my application in Angular/React/Vue/Svelte to get rich dynamic behaviour?
+
+== Dynamic behaviour?
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[.center]
++++
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Development 2000 - 2010<br>😃 HTML, CSS, JS<br><br>Development 2010 - 2020<br>😐 HTML, CSS, JS, Nodejs, React, Angular, Vue, Ionic, React Native, Bootstrap, WordPress, PHP, MySQL, Mongo, Node, Deno, SASS, ES6, Webpack, Python, Redis, Redux<br><br>Development 2020 - 2030<br>😱😱😱😱😱😱😱😱😱😱😱😱😱</p>&mdash; Adrian Twarog 🦘 (@adrian_twarog) <a href="https://twitter.com/adrian_twarog/status/1447762596774363140?ref_src=twsrc%5Etfw">October 12, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
++++
+
+== Thoughtworks Technology Radar
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+_HOLD: "SPA by default"_
+
+[quote]
+SPAs incur complexity that simply doesn&#39;t exist with traditional server-based websites[..] Too often, though, we don&#39;t see teams making that trade-off analysis, blindly accepting the complexity of SPAs by default even when the business needs don&#39;t justify it.
+
+== Dynamic behaviour in MPAs
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+* Unpoly
+* Hotwire
+* HTMX
+
+[.notes]
+--
+* Hotwire is written by the team at Basecamp to power HEY, their email web application.
+--
+
+[%notitle]
+== HTML over the wire - HTMX
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+image::htmx.svg[]
+
+[%step]
+* Use HTML attributes
+* Can be attached to any HTML element
+* Uses HTML in responses, not JSON
+* Can be applied selectively
+* Backend agnostic
+
+[.notes]
+--
+htmx is a JavaScript library to make it easy to trigger AJAX requests from any HTML element.
+
+* Use HTML attributes on any element to trigger AJAX requests
+* Uses HTML in responses, not JSON
+* Can be applied selectively to enhance the dynamic experience for the user where it makes sense
+* Backend agnostic: works with Java, Python, PHP, .NET, ...
+--
+
+[%notitle]
+== HTML over the wire - HTMX
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+image::htmx.svg[]
+
+[source,html]
+----
+<input type="text" name="q"
+          hx-get="/trigger_delay"
+          hx-trigger="keyup changed delay:500ms"
+          hx-target="#search-results"
+          placeholder="Search..."/>
+    <div id="search-results"></div>
+----
+
+[.centertitle]
+== Demo
+
+image::background.jpeg[background, size=cover]
+
+[.notes]
+--
+* Demo on HTMX website: https://htmx.org/examples/active-search/
+--
+
+[.centertitle]
+== TodoMVC
+
+image::background.jpeg[background, size=cover]
+
+[.notes]
+--
+* Pure thymeleaf
+* hx-boost
+* optimized htmx (Thymeleaf fragments)
+* Server Sent events (Text blocks)
+--
+
+[%auto-animate]
+== TodoMVC - hx-boost
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,html,linenums,data-id=todomvcboost]
+.src/main/resources/templates/index.html
+----
+<section class="todoapp">
+    <header class="header">
+        ...
+    </header>
+</section>
+----
+
+[%auto-animate]
+== TodoMVC - hx-boost
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,html,linenums,data-id=todomvcboost]
+.src/main/resources/templates/index.html
+----
+<section class="todoapp" hx-boost="true">
+    <header class="header">
+        ...
+    </header>
+</section>
+----
+
+== TodoMVC - htmx
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+Extra controller method:
+
+[source,java,highlight=1|9|8]
+----
+    @PostMapping(headers = "HX-Request")
+    public String htmxAddTodoItem(TodoItemFormData formData,
+                                  Model model,
+                                  HttpServletResponse response) {
+        TodoItem item = repository.save(new TodoItem(formData.getTitle(), false));
+        model.addAttribute("item", toDto(item));
+
+        response.setHeader("HX-Trigger", "itemAdded");
+        return "fragments :: todoItem";
+    }
+----
+
+== TodoMVC - htmx
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,html,highlight=7..10]
+.index.html
+----
+    ...
+    <form id="new-todo-form" th:action="@{/}" method="post" th:object="${item}">
+        <input id="new-todo-input" class="new-todo" placeholder="What needs to be done?" autofocus
+               autocomplete="false"
+               name="title"
+               th:field="*{title}"
+               hx-target="#todo-list"
+               hx-swap="beforeend"
+               hx-post="/"
+               hx-trigger="keyup[key=='Enter']"
+        >
+    </form>
+----
+
+== TodoMVC - htmx
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,html,highlight=4..5]
+----
+<span th:fragment="active-items-count"
+      id="active-items-count"
+      class="todo-count"
+      hx-get="/active-items-count"
+      hx-trigger="itemAdded from:body, itemCompletionToggled from:body, itemDeleted from:body">
+        <th:block th:unless="${numberOfActiveItems == 1}">
+            <span class="todo-count"><strong th:text="${numberOfActiveItems}">0</strong> items left</span>
+        </th:block>
+        <th:block th:if="${numberOfActiveItems == 1}">
+            <span class="todo-count"><strong>1</strong> item left</span>
+        </th:block>
+</span>
+----
+
+[.centertitle]
+== IoT Dashboard
+
+image::background.jpeg[background, size=cover]
+
+[.notes]
+--
+* Pure thymeleaf
+* Load page, data afterwards
+* Add manual refresh button
+* Automatic refresh
+--
+
+== IoT Dashboard - GET on load
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,html]
+----
+<div th:fragment="device-info-with-load(device)"
+     th:attr="hx-get=|/onload/${device.id}|"
+     th:id="|device-info-${device.id}|"
+     hx-trigger="load"
+     hx-swap="outerHTML">
+    ...
+</div>
+----
+
+== IoT Dashboard - Refresh button
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,html]
+----
+    <button th:attr="hx-get=|/refresh-button/${device.id}|,
+                     hx-target=|#device-info-${device.id}|,
+                     hx-indicator=|#device-info-${device.id}|"
+            hx-swap="outerHTML"
+            class="ml-4 px-4 py-2 font-semibold text-sm bg-cyan-500 text-white rounded-full shadow-sm">Refresh
+    </button>
+----
+
+== IoT Dashboard - Auto refresh
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,html,highlight=4]
+----
+<div th:fragment="device-info(device)"
+     th:id="|device-info-${device.id}|"
+     th:attr="hx-get=|/auto-refresh/${device.id}|"
+     hx-trigger="every 5s"
+     hx-swap="outerHTML">
+----
+
+[%step]
+Can be implemented to trigger on Server-Sent event or WebSocket as well.
+
+== When _not_ to use htmx
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+* Popup menus (AlpineJS)
+* Custom checkbox/toggle buttons (AlpineJS)
+* Browser games
+* https://jwt.io/
+
+== When to use htmx
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[%step]
+* Build a dynamic website without JavaScript headaches
+* Incrementally add dynamic behaviour to an existing Thymeleaf application
+* Re-use the same Thymeleaf templates for full page and partial updates
+
+
+[.notes]
+--
+What are good use cases for htmx?
+You want to build a dynamic website, but you don't like to deal with the JavaScript framework and complexities of an SPA.
+You have an existing Thymeleaf application and want to add additional interactivity to enhance the user experience. Add htmx to the app and invest more time/resources in that part of your application where it will really pay of for your users.
+Finally, with htmx, you can re-use the exact same Thymeleaf templates to do partial updates as that your application uses to fully render the page.
+--
+
+== Using htmx with ease
+
+https://github.com/wimdeblauwe/htmx-spring-boot-thymeleaf
+
+[%step]
+* Thymeleaf dialect
+* Spring MVC helpers
+* 👏 Clint Checketts and Oliver Drotbohm
+
+[%auto-animate]
+== Thymeleaf dialect
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,html,linenums,data-id=libhxattr]
+----
+<button th:attr="hx-get=|/refresh-button/${device.id}|,
+                 hx-target=|#device-info-${device.id}|,
+                 hx-indicator=|#device-info-${device.id}|"
+        hx-swap="outerHTML"
+        class="ml-4 px-4 py-2 font-semibold text-sm bg-cyan-500 text-white rounded-full shadow-sm">Refresh
+</button>
+----
+
+[%auto-animate]
+== Thymeleaf dialect
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,html,linenums,data-id=libhxattr]
+----
+<button hx:get="|/refresh-button/${device.id}|"
+        hx:target="|#device-info-${device.id}|"
+        hx:indicator="|#device-info-${device.id}|"
+        hx-swap="outerHTML"
+        class="ml-4 px-4 py-2 font-semibold text-sm bg-cyan-500 text-white rounded-full shadow-sm">Refresh
+</button>
+----
+
+[%auto-animate]
+== Spring Mvc Helpers
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,java,linenums,data-id=libmvc]
+----
+    @PostMapping(headers = "HX-Request")
+    public String htmxAddTodoItem(TodoItemFormData formData,
+                                  Model model,
+                                  HttpServletResponse response) {
+        TodoItem item = repository.save(new TodoItem(formData.getTitle(), false));
+        model.addAttribute("item", toDto(item));
+
+        response.setHeader("HX-Trigger", "itemAdded");
+        return "fragments :: todoItem";
+    }
+----
+
+[%auto-animate]
+== Spring Mvc Helpers
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,java,linenums,data-id=libmvc]
+----
+    @PostMapping
+    @HxRequest
+    @HxTrigger("itemAdded")
+    public String htmxAddTodoItem(TodoItemFormData formData,
+                                  Model model) {
+        TodoItem item = repository.save(new TodoItem(formData.getTitle(), false));
+        model.addAttribute("item", toDto(item));
+
+        return "fragments :: todoItem";
+    }
+----
+
+== Out of band responses
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,java]
+----
+    @PostMapping
+    @HxRequest
+    public HtmxResponse htmxAddTodoItem(TodoItemFormData formData,
+                                        Model model) {
+        TodoItem item = repository.save(new TodoItem(formData.getTitle(), false));
+         model.addAttribute("item", toDto(item));
+         model.addAttribute("numberOfActiveItems", getNumberOfActiveItems());
+        return new HtmxResponse()
+                .addTemplate("fragments :: todoItem")
+                .addTemplate("fragments :: active-items-count");
+    }
+----
+
+== Out of band responses
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[source,html,highlight=3]
+----
+<span th:fragment="active-items-count"
+      id="active-items-count"
+      hx-swap-oob="true"
+      class="todo-count">
+        <th:block th:unless="${numberOfActiveItems == 1}">
+            <span class="todo-count"><strong th:text="${numberOfActiveItems}">0</strong> items left</span>
+        </th:block>
+        <th:block th:if="${numberOfActiveItems == 1}">
+            <span class="todo-count"><strong>1</strong> item left</span>
+        </th:block>
+</span>
+----
+
+
+[.centertitle]
+== Movie App Demo
+
+image::background.jpeg[background, size=cover]
+
+== Learn more
+
+image::background-bottom-bar.jpeg[background, size=cover]
+
+[%step]
+* Htmx: https://htmx.org/discord
+* Thymeleaf: Book 'Taming Thymeleaf'
++
+[.ttcover]
+image::cover 3D.png[]
+* Spring: This conference
+
+
+
+[.centertitle]
+== QUESTIONS?
+
+image::background.jpeg[background, size=cover]
+
+[.white]
+* Twitter: https://www.twitter.com/wimdeblauwe[@wimdeblauwe]
+* Website: https://www.wimdeblauwe.com
+
+== Locality of Behaviour
+
+[quote]
+The behaviour of a unit of code should be as obvious as possible by looking only at that unit of code
+
+== Locality of Behaviour
+
+[source,html]
+.index.html
+----
+<button hx-get="/clicked">Click Me</button>
+----
+
+vs
+
+[source,html]
+.index.html
+----
+<button id="myButton">Click Me</button>
+----
+
+.app.js
+[source,js]
+----
+$("#myButton").on("click", function(){
+    $.ajax({
+         /* AJAX options... */
+    });
+  });
+----
+
+== Locality of Behaviour
+
+[%step]
+* See also: Tailwind CSS, AlpineJS
+* Competing principles:
+** Don't Repeat Yourself (DRY)
+** Separation of Concerns (SoC)

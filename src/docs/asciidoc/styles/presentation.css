@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Saira&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap');
+
+.reveal h1 {
+    color: white;
+    margin-top: 5rem;
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+    font-family: Saira, sans-serif;
+    text-transform: none;
+}
+
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+    color: black;
+}
+
+.centertitle > h2 {
+    color: white;
+    font-size: 3em;
+    margin-top: 17rem;
+}
+
+
+.center {
+    display: flex;
+    justify-content: center;
+}
+
+.white {
+    color: white;
+    font-size: 32px;
+}
+
+.white > ul > li > p > a {
+    color: #e5e5e5;
+}
+
+.reveal {
+    font-family: "Open Sans", sans-serif;
+}
+
+.reveal code {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.reveal section img {
+    border: 0;
+}
+
+.author {
+    color: white;
+}
+
+.author a {
+    display: none;
+}
+
+.reveal blockquote {
+    box-shadow: none;
+    width: 90%;
+}
+
+/* Style the name of a source file so it takes less space on the slide */
+.listingblock > .title {
+    font-size: 0.6em;
+    margin-top: -1em;
+    font-style: italic;
+    font-family: monospace;
+}
+
+/* Have annotations in source blocks stand out more on the black background */
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta {
+    color: #ffe44d !important;
+}
+
+.sweetie img {
+    top: 500px;
+    left: 50px;
+    position: absolute;
+    max-height: 250px;
+}
+
+.ttcover img {
+    top: 320px;
+    left: 550px;
+    position: absolute;
+    max-height: 300px;
+    z-index: -1;
+}

@@ -1,0 +1,21 @@
+@startuml
+
+!include plantuml-style.iuml
+
+participant "Browser" as B
+participant "Server" as S
+participant "Database" as D
+
+B -> S: GET /users/create
+S --> B: return an empty form to the browser
+|||
+B -> S: POST /users/create
+S -> D: Store user
+D --> S
+S --> B: Respond with 3xx redirect to /users
+|||
+B -> S: GET /users
+S --> B: Show list of users
+
+
+@enduml

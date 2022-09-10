@@ -1,0 +1,8 @@
+= Spring I/O 2022 Presentation: Modern frontends using Spring Boot and Thymeleaf with htmx
+
+== Setup live reload
+
+. Generate presentation when source changes: `mvn fizzed-watcher:run`
+. Run livereload server: `livereload target/generated-slides/`
+. Start webserver: `python3 -m http.server -d target/generated-slides/`
+. Open browser: http://localhost:8000/Taming%20Thymeleaf%20Presentation.html#/
