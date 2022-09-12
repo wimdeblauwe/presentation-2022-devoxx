@@ -1,6 +1,6 @@
-= Devoxx 2022 Presentation: Modern frontends using Spring Boot and Thymeleaf with htmx
+= Devoxx 2022 Presentation: Modern frontends with Thymeleaf and htmx
 
 == Setup live reload
 
 . Generate presentation when source changes: `mvn fizzed-watcher:run`
-. Open `target/generated-slides/Modern frontends using Spring Boot and Thymeleaf with htmx.html` with IntelliJ and use "Open in Chrome" functionality.
+. Open `target/generated-slides/Modern frontends with Thymeleaf and htmx.html` with IntelliJ and use "Open in Chrome" functionality.

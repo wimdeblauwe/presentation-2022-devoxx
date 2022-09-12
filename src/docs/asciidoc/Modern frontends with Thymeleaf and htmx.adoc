@@ -1,4 +1,4 @@
-= Modern frontends using Spring Boot and Thymeleaf with htmx
+= Modern frontends with Thymeleaf and htmx
 Wim Deblauwe <wim.deblauwe@widit.be>
 ifndef::imagesdir[:imagesdir: images]
 ifndef::diagramsdir[:diagramsdir: diagrams]
