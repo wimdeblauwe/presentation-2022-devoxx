@@ -19,12 +19,12 @@ image::sweetie-happy.png[]
 
 [.notes]
 --
-Hello and welcome to my presentation on 'Modern frontends using Spring Boot and Thymeleaf with htmx'.
+Hello and welcome to my presentation on 'Modern frontends with Thymeleaf with htmx'.
 My name is Wim Deblauwe.
 I am a freelance Java developer, currently working at Sweet Mustard in Belgium.
 I am the author of the book 'Taming Thymeleaf', an in-depth guide to building a full web application using Spring Boot and Thymeleaf.
 I love working with Java, Spring, Thymeleaf and Asciidoctor as they are amazing tools that give a lot of productivity and joy when I work with them.
-I will give a very brief introduction to what thymeleaf is and will show how htmx enhances this with code samples and lots of demo's.
+I will give a very brief introduction to what Thymeleaf is and will show how htmx enhances this with code samples and lots of demo's.
 --
 
 == What is Thymeleaf?
