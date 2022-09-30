@@ -278,7 +278,7 @@ image::background-bottom-bar.jpeg[background, size=cover]
 
 image::background-bottom-bar.jpeg[background, size=cover]
 
-Do I need to develop my application in Angular/React/Vue/Svelte to get rich dynamic behaviour?
+image::thymeleaf-dynamic-website-meme.jpeg[height=580]
 
 == Dynamic behaviour?
 
